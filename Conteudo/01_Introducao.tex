@@ -1,0 +1,85 @@
+\chapter{Introdução}
+\label{cap:introducao}
+
+A crescente digitalização de processos sociais, científicos, industriais e organizacionais tem provocado um aumento contínuo na produção, armazenamento, transmissão e processamento de dados. Esse cenário intensifica a relevância dos sistemas intensivos em dados, isto é, sistemas projetados para lidar com grandes volumes de dados, múltiplas fontes de informação, diferentes formatos e requisitos rigorosos de desempenho, escalabilidade, disponibilidade e confiabilidade. Em ambientes de Big Data, esses desafios são frequentemente associados às características de volume, velocidade, variedade e veracidade dos dados, as quais influenciam diretamente o modo como as arquiteturas de software são concebidas e avaliadas \cite{dai2019big,hilbert2016big}.
+
+Diferentemente de sistemas tradicionais, aplicações intensivas em dados dependem da integração entre componentes distribuídos, mecanismos de armazenamento, plataformas de processamento paralelo, sistemas de mensageria, estratégias de movimentação de dados e técnicas de gerenciamento de recursos. Nesse contexto, decisões arquiteturais deixam de ser apenas escolhas estruturais de alto nível e passam a exercer impacto direto sobre atributos de qualidade, como latência, \textit{throughput}, escalabilidade, tolerância a falhas e eficiência no uso de recursos computacionais \cite{mattmann2004software,ji2020quality,kleppmann2017designing}.
+
+Entre as decisões arquiteturais mais relevantes nesse domínio, destacam-se aquelas relacionadas à forma como os dados são ingeridos, movimentados, armazenados e processados ao longo de um \textit{pipeline}. A escolha entre processamento em lote (\textit{batch processing}) e processamento em fluxo (\textit{stream processing}), por exemplo, pode alterar substancialmente o comportamento do sistema em termos de vazão, tempo de resposta, estabilidade temporal e consumo de recursos. Do mesmo modo, decisões sobre particionamento, escalonamento, localização do processamento, uso de memória, transferência entre sistemas e configuração de mecanismos de tolerância a falhas podem produzir impactos distintos conforme o volume dos dados, a taxa de chegada dos eventos e o ambiente de execução \cite{haynes2016pipegen,wang2018hard,aung2019coordinate,lyu2022fine}.
+
+Apesar da existência de diversas técnicas, \textit{frameworks} e estratégias voltadas à otimização de sistemas intensivos em dados, a literatura ainda apresenta evidências empíricas fragmentadas. Muitos estudos avaliam soluções específicas em contextos particulares, utilizando métricas, \textit{workloads} e ambientes experimentais heterogêneos. Essa fragmentação dificulta a comparação entre abordagens, reduz a capacidade de generalização dos resultados e limita o apoio sistemático à tomada de decisão arquitetural. Como consequência, arquitetos de software frequentemente precisam decidir entre alternativas tecnológicas e arquiteturais com base em experiências prévias, recomendações práticas ou experimentos isolados, sem dispor de mecanismos quantitativos capazes de orientar essas escolhas de forma mais objetiva.
+
+Diante desse contexto, esta pesquisa parte do seguinte problema: como apoiar, de forma sistemática e baseada em evidências, a tomada de decisão arquitetural em sistemas intensivos em dados, considerando características dos dados, estratégias de processamento e métricas observáveis de desempenho?
+
+Para enfrentar essa lacuna, a pesquisa foi organizada em três movimentos complementares. O primeiro consistiu na realização de uma Revisão Sistemática da Literatura sobre o \textit{design} de sistemas intensivos em dados, acompanhada de uma síntese quantitativa exploratória. Essa etapa permitiu identificar técnicas arquiteturais recorrentes, métricas utilizadas na avaliação de desempenho, padrões de otimização e lacunas metodológicas relacionadas ao relato experimental.
+
+O segundo movimento consistiu na condução de uma campanha experimental voltada à produção de evidência empírica controlada sobre decisões arquiteturais em sistemas intensivos em dados. O experimento comparou os paradigmas de processamento \textit{batch} e \textit{streaming} utilizando tecnologias amplamente adotadas, como Apache Spark, Spark Structured Streaming e Apache Kafka. Foram avaliados diferentes volumes de dados, taxas de eventos, números de \textit{workers} e configurações de \textit{trigger}, considerando métricas como \textit{throughput}, latência, uso de CPU, consumo de memória, \textit{backpressure} e taxa de processamento \cite{zaharia2016apache,armbrust2018structured,kreps2011kafka,matteussi2022performance}.
+
+Os resultados experimentais obtidos reforçam a importância de compreender os \textit{trade-offs} envolvidos nas decisões arquiteturais. O processamento \textit{batch} tende a favorecer maiores taxas de \textit{throughput} em determinados cenários, enquanto o processamento em fluxo introduz custos associados à ingestão contínua, à coordenação dos micro-lotes e ao controle de estabilidade temporal. Além disso, fatores como volume de dados, paralelismo horizontal e intervalo de \textit{trigger} podem alterar significativamente o comportamento do sistema, indicando que decisões arquiteturais devem ser analisadas de forma contextualizada e baseada em evidências.
+
+O terceiro movimento da pesquisa consiste na proposta de uma abordagem quantitativa de apoio à decisão arquitetural, considerando evidências empíricas e características informacionais dos dados. A intenção é investigar se propriedades como volume, taxa de eventos, entropia, redundância e variabilidade podem ser combinadas com métricas de desempenho para apoiar a comparação entre alternativas arquiteturais.
+
+
+A Figura~\ref{fig:fluxo-pesquisa} apresenta o encadeamento geral da pesquisa.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 1.2cm,
+    etapa/.style={
+        rectangle, rounded corners, draw, align=center,
+        text width=3.2cm, minimum height=1.2cm,
+        font=\small\sffamily, fill=gray!5
+    },
+    destaque/.style={
+        etapa, font=\small\bfseries, fill=blue!10, text width=4.5cm
+    },
+    seta/.style={-{Latex[length=3mm]}, thick, draw=gray!80}
+]
+
+% Nós
+\node[etapa] (rsl) {Revisão Sistemática da Literatura};
+\node[etapa, right=of rsl] (exp) {Campanha Experimental};
+\node[etapa, right=of exp] (modelo) {Modelo de Apoio à Decisão};
+\node[destaque, below=1.5cm of exp] (decisao) {Tomada de Decisão Arquitetural};
+
+% Conexões
+\draw[seta] (rsl) -- (exp);
+\draw[seta] (exp) -- (modelo);
+\draw[seta] (rsl.south) |- ([yshift=0.3cm]decisao.west);
+\draw[seta] (exp.south) -- (decisao.north);
+\draw[seta] (modelo.south) |- ([yshift=0.3cm]decisao.east);
+
+\end{tikzpicture}
+\caption{Encadeamento conceitual da pesquisa.}
+\label{fig:fluxo-pesquisa}
+\end{figure}
+
+\section{Objetivos}
+\label{sec:intro-objetivos}
+
+O objetivo geral desta pesquisa é investigar como evidências provenientes da literatura científica, resultados experimentais e características observáveis dos dados podem ser integrados para apoiar a tomada de decisão arquitetural em sistemas intensivos em dados.
+
+Para alcançar esse objetivo geral, foram definidos os seguintes objetivos específicos:
+
+\begin{enumerate}
+\item caracterizar, por meio de uma Revisão Sistemática da Literatura, as principais técnicas, abordagens, métricas e lacunas relacionadas ao design de sistemas intensivos em dados;
+
+
+\item sintetizar evidências quantitativas sobre o impacto de otimizações arquiteturais e sistêmicas no desempenho de sistemas intensivos em dados;
+
+\item projetar e executar uma campanha experimental para comparar estratégias de processamento \textit{batch} e \textit{streaming} sob diferentes condições operacionais;
+
+\item analisar estatisticamente os resultados experimentais, considerando métricas como \textit{throughput}, latência, escalabilidade, uso de recursos e estabilidade do processamento;
+
+\item propor uma abordagem quantitativa de apoio à decisão arquitetural que relacione características dos dados e do processamento ao comportamento esperado do sistema.
+
+
+\end{enumerate}
+
+A justificativa desta pesquisa reside na necessidade de reduzir a dependência exclusiva de avaliações empíricas isoladas no processo de decisão arquitetural. Em sistemas intensivos em dados, a realização de experimentos completos para cada alternativa arquitetural pode demandar tempo, infraestrutura computacional e esforço de implementação significativos. Dessa forma, uma abordagem baseada em evidências pode auxiliar arquitetos de software na análise preliminar de alternativas, contribuindo para decisões mais fundamentadas, rastreáveis e alinhadas aos requisitos de desempenho e escalabilidade do sistema.
+
+Além disso, esta pesquisa contribui para a área de Engenharia de Software ao aproximar três dimensões complementares: a consolidação de evidências científicas por meio de revisão sistemática, a produção de evidências empíricas por meio de experimentação controlada e a construção de mecanismos quantitativos para apoiar decisões arquiteturais. Essa integração busca avançar o conhecimento sobre o design de sistemas intensivos em dados e fornecer subsídios para pesquisas futuras relacionadas à avaliação, predição e recomendação de arquiteturas orientadas ao processamento intensivo de dados.
+
+
+Esta proposta está organizada em oito capítulos. O Capítulo~\ref{cap:fundamentacao} apresenta a fundamentação teórica relacionada a sistemas intensivos em dados, decisões arquiteturais, processamento \textit{batch} e \textit{streaming}, Apache Spark, Apache Kafka e Teoria da Informação. O Capítulo~\ref{cap:metodologia} descreve a metodologia da pesquisa. O Capítulo~\ref{cap:rsl} apresenta a Revisão Sistemática da Literatura conduzida nesta pesquisa. O Capítulo~\ref{cap:campanha-experimental} descreve a campanha experimental realizada. O Capítulo~\ref{cap:resultados} apresenta os resultados parciais. O Capítulo~\ref{cap:cronograma} apresenta o cronograma da pesquisa. Por fim, o Capítulo~\ref{cap:proximos-passos} descreve os próximos passos e as atividades previstas para continuidade da dissertação.

@@ -1,0 +1,89 @@
+\chapter{Próximos Passos}
+\label{cap:proximos-passos}
+Esta pesquisa já possui três componentes principais desenvolvidos: a Revisão Sistemática da Literatura (RSL) e a campanha experimental comparando processamento \textit{batch} e \textit{streaming}; ou em desenvolvimento: a verificação de condução de mais experimentos na campanha inicial e a formulação inicial de uma abordagem quantitativa de apoio à decisão arquitetural. Os próximos passos concentram-se no refinamento dessa abordagem, no cálculo de características informacionais dos dados, na integração destas aos resultados experimentais e na validação preliminar do modelo.
+
+\section{Atividades Necessárias para a Conclusão da Pesquisa}
+\label{sec:atividades-conclusao}
+Os próximos passos da pesquisa estão relacionados à transformação dos resultados já obtidos em uma contribuição integrada. A intenção é que a dissertação apresente uma abordagem articulada de apoio à tomada de decisão arquitetural em sistemas intensivos em dados. As atividades previstas são apresentadas na Tabela~\ref{tab:proximos-passos}.
+
+\begin{table}[htbp]
+\centering
+\caption{Atividades previstas para a continuidade da pesquisa.}
+\label{tab:proximos-passos}
+\small
+\begin{tabular}{p{4cm} p{5.5cm} p{4cm}}
+\toprule
+\textbf{Atividade} & \textbf{Descrição} & \textbf{Resultado esperado} \\
+\midrule
+Consolidação experimental & Organizar tabelas, gráficos e resultados estatísticos. & Base de dados consolidada. \\
+Cálculo de métricas informacionais & Calcular entropia, redundância, cardinalidade e variabilidade. & Caracterização informacional. \\
+Refinamento do modelo & Definir entradas, saídas e critérios de ranqueamento. & Modelo quantitativo inicial. \\
+Integração de resultados & Relacionar dados com métricas de desempenho. & Evidências de suporte. \\
+Validação preliminar & Comparar recomendações com resultados observados. & Avaliação de coerência. \\
+Redação final & Consolidar capítulos, revisar escrita e normas. & Versão final para defesa. \\
+\bottomrule
+\end{tabular}\vspace{0.3em}
+\begin{flushleft}
+\footnotesize Fonte: elaborado pelo autor.
+\end{flushleft}\end{table}
+
+\section{Refinamento do Modelo de Apoio à Decisão Arquitetural}
+\label{sec:refinamento-modelo-proximos}
+O modelo deverá considerar características associadas aos dados e ao processamento, como volume, taxa de eventos, entropia, redundância, cardinalidade, variabilidade, \textit{throughput}, latência e \textit{backpressure}. Um cenário de processamento é representado pelo vetor de características:
+\begin{equation}
+C_D = \{V, \lambda, H, R, K, \sigma, L_{req}\}
+\label{eq:vetor-cenario-proximos}
+\end{equation}
+em que $V$ é o volume, $\lambda$ a taxa de eventos, $H$ a entropia, $R$ a redundância, $K$ a cardinalidade, $\sigma$ a variabilidade e $L_{req}$ a restrição de latência. Para cada alternativa arquitetural $a$, associa-se o conjunto de métricas $P_a = \{T_a, L_a, U_{cpu,a}, U_{mem,a}, B_a, E_a\}$. De forma exploratória, o escore de uma alternativa pode ser representado por:
+\begin{equation}
+S(a) = w_1T'_a + w_2L'_a + w_3U'_a + w_4E'_a
+\label{eq:score-proximos}
+\end{equation}
+Essa formulação será refinada conforme a análise dos dados experimentais e a definição das métricas mais relevantes.
+
+\section{Cálculo das Características Informacionais dos Dados}
+\label{sec:calculo-caracteristicas-proximos}
+Utilizando a Teoria da Informação, serão calculadas métricas como a entropia de Shannon:
+\begin{equation}
+H(X) = - \sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
+\end{equation}
+e a redundância:
+\begin{equation}
+R(X) = 1 - \frac{H(X)}{H_{max}(X)}
+\end{equation}
+Essas métricas serão analisadas em conjunto com os dados experimentais, buscando correlações entre a estrutura da informação e o comportamento das arquiteturas sob carga.
+
+\section{Produção Científica Prevista}
+\label{sec:producao-cientifica-proximos}
+Além da dissertação, a pesquisa prevê a produção de artigos conforme a Tabela~\ref{tab:producao-cientifica}.
+
+\begin{table}[htbp]
+\centering
+\caption{Produção científica prevista.}
+\label{tab:producao-cientifica}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Artigo} & \textbf{Tema} & \textbf{Situação} & \textbf{Período} \\
+\midrule
+Artigo 1 & RSL e Design de Sistemas & Submetido (WEBIST) & 2026.1 \\
+Artigo 2 & Campanha Experimental & Em elaboração & 2026.2 \\
+Artigo 3 & Modelo de Decisão & Planejado & 2026.2--2027.1 \\
+Artigo 4 & Consolidação e Validação & Planejado & 2027.1 \\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+\begin{flushleft}
+\footnotesize Fonte: elaborado pelo autor.
+\end{flushleft}
+\end{table}
+
+\section{Delimitação do Escopo e Trabalhos Futuros}
+\label{sec:escopo-trabalhos-futuros}
+O escopo está delimitado ao uso da RSL, da campanha experimental já conduzida e da validação preliminar do modelo. Trabalhos futuros poderão ampliar a pesquisa através da:
+\begin{itemize}
+    \item Avaliação com outros \textit{datasets} e tecnologias (e.g., Flink, Kafka Streams);
+    \item Inclusão de métricas de custo financeiro, consumo energético e resiliência;
+    \item Validação em ambientes de produção real;
+    \item Desenvolvimento de ferramenta de automação para recomendações arquiteturais.
+\end{itemize}

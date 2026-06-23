@@ -1,0 +1,115 @@
+\chapter{Fundamentação Teórica}
+\label{cap:fundamentacao}
+
+Os fundamentos conceituais que sustentam a pesquisa envolvem sistemas intensivos em dados, decisões arquiteturais e estratégias de processamento em larga escala. Inicialmente, discutem-se os sistemas intensivos em dados e sua relação com decisões arquiteturais. Em seguida, examinam-se os paradigmas de processamento em lote e processamento em fluxo, com ênfase em seus principais \textit{trade-offs}. Também são abordadas as tecnologias utilizadas na campanha experimental, especialmente Apache Spark, Spark Structured Streaming e Apache Kafka. Por fim, discutem-se as métricas de desempenho consideradas na avaliação experimental e os conceitos da Teoria da Informação que fundamentam a proposta de apoio à decisão arquitetural.
+
+\section{Sistemas Intensivos em Dados e Decisões Arquiteturais}
+\label{sec:sistemas-decisoes}
+
+Sistemas intensivos em dados são sistemas de software cujo funcionamento depende fortemente da coleta, armazenamento, processamento, movimentação e análise de grandes volumes de dados. Esses sistemas são caracterizados não apenas pela quantidade de dados manipulada, mas também pela diversidade de formatos, pela velocidade com que os dados são produzidos e pela necessidade de manter níveis aceitáveis de desempenho, escalabilidade, confiabilidade e disponibilidade.
+
+O crescimento de aplicações em domínios como computação em nuvem, Internet das Coisas (IoT), ciência de dados, sistemas de recomendação, monitoramento em tempo real e análise de grandes volumes de registros operacionais ampliou a importância desse tipo de sistema. Em tais contextos, os dados passam a ocupar papel central na arquitetura, influenciando decisões sobre armazenamento, particionamento, replicação, processamento, integração entre componentes e comunicação entre serviços \cite{dai2019big,hilbert2016big,kleppmann2017designing}.
+
+Diferentemente de sistemas transacionais tradicionais, nos quais a lógica de negócio pode ocupar papel predominante na estrutura arquitetural, sistemas intensivos em dados exigem atenção especial ao fluxo dos dados ao longo da arquitetura. A forma como os dados são ingeridos, transformados, transportados e persistidos pode afetar diretamente atributos de qualidade. Por esse motivo, decisões arquiteturais nesse tipo de sistema devem considerar tanto os requisitos funcionais quanto os requisitos de qualidade associados ao comportamento operacional da aplicação \cite{mattmann2004software,ji2020quality}.
+
+Decisões arquiteturais correspondem a escolhas de projeto que afetam a estrutura, o comportamento e os atributos de qualidade de um sistema de software. Em sistemas intensivos em dados, essas decisões envolvem, entre outros aspectos, a escolha de estratégias de processamento, mecanismos de armazenamento, formas de particionamento, políticas de replicação, tecnologias de mensageria, modelos de consistência, escalonamento de tarefas e alocação de recursos computacionais.
+
+Essas decisões são críticas porque impactam diretamente características como latência, \textit{throughput}, escalabilidade, custo computacional, tolerância a falhas e eficiência no uso de CPU, memória, disco e rede. Por exemplo, uma arquitetura pode priorizar maior vazão em processamento em lote, enquanto outra pode priorizar menor latência e maior responsividade em processamento contínuo. Da mesma forma, uma estratégia de movimentação de dados pode reduzir o tempo de transferência entre sistemas, enquanto uma estratégia de processamento próximo aos dados pode reduzir custos de I/O e melhorar a escalabilidade \cite{haynes2016pipegen,vincon2020nkv}.
+
+A literatura apresenta diferentes propostas voltadas à otimização de aspectos específicos dessas arquiteturas. Há estudos relacionados à otimização de escalonamento em ambientes Spark sobre YARN \cite{wang2018hard}, à compilação dinâmica de consultas SQL em Apache Spark \cite{schiavio2020dynamic}, ao gerenciamento fino de recursos em ambientes de Big Data \cite{lyu2022fine}, ao uso de armazenamento sensível a NVM para cargas analíticas \cite{gotze2018nvm-aware} e à ingestão transacional escalável de dados \cite{li2022karst}. Embora esses estudos apresentem contribuições relevantes, muitos deles avaliam soluções em contextos específicos, com métricas e configurações experimentais distintas.
+
+Essa heterogeneidade torna a tomada de decisão arquitetural uma tarefa complexa. Arquitetos de software precisam escolher entre alternativas que podem apresentar vantagens em determinados cenários e limitações em outros. Assim, uma decisão adequada depende não apenas do conhecimento sobre tecnologias disponíveis, mas também da compreensão dos dados, da carga de trabalho, dos requisitos de desempenho e das restrições operacionais do ambiente.
+
+\section{Processamento em Lote e Processamento em Fluxo}
+\label{sec:batch-streaming}
+
+Entre as decisões arquiteturais mais relevantes em sistemas intensivos em dados está a escolha entre processamento em lote e processamento em fluxo. O processamento em lote, ou \textit{batch processing}, consiste na execução de tarefas sobre conjuntos de dados previamente armazenados. Esse paradigma é amplamente utilizado em análises periódicas, geração de relatórios, processamento histórico e execução de cargas analíticas sobre grandes volumes de dados.
+
+O processamento em fluxo, ou \textit{stream processing}, por sua vez, é orientado ao processamento contínuo de eventos à medida que eles são produzidos. Esse paradigma é especialmente relevante em cenários que exigem respostas próximas ao tempo real, como monitoramento de sensores, análise de \textit{logs}, detecção de anomalias, rastreamento de atividades e integração contínua de eventos em \textit{pipelines} de dados \cite{nasiri2019evaluation,armbrust2018structured}.
+
+A escolha entre esses paradigmas envolve \textit{trade-offs}. O processamento em lote pode se beneficiar da disponibilidade de todo o conjunto de dados antes da execução, permitindo otimizações globais, melhor amortização de custos fixos e maior aproveitamento de recursos em determinados cenários. Por outro lado, esse paradigma pode não ser adequado para aplicações que exigem baixa latência ou resposta contínua a eventos.
+
+O processamento em fluxo reduz o intervalo entre a chegada dos dados e sua análise, mas introduz desafios adicionais. Entre eles estão a necessidade de lidar com ingestão contínua, controle de atrasos, variação na taxa de eventos, tolerância a falhas, gerenciamento de estado, pressão de retorno (\textit{backpressure}) e estabilidade temporal do \textit{pipeline}. Em \textit{frameworks} baseados em micro-lotes, como o Spark Structured Streaming, o intervalo de \textit{trigger} também influencia o comportamento do sistema, afetando latência, \textit{throughput} e variabilidade do processamento \cite{armbrust2018structured,ivanov2018exploratory,matteussi2022performance}.
+
+A literatura sobre processamento de fluxos mostra que sistemas baseados em micro-lotes e sistemas de processamento contínuo apresentam compromissos distintos. Sistemas de micro-lotes tendem a simplificar mecanismos de tolerância a falhas e integração com processamento em lote, mas podem introduzir maior latência em função do agrupamento dos dados em intervalos discretos. Sistemas contínuos podem alcançar menor latência, porém geralmente envolvem maior complexidade no controle de estado, recuperação e adaptação a falhas \cite{venkataraman2017drizzle}.
+
+
+\section{Apache Spark, Spark Structured Streaming e Apache Kafka}
+\label{sec:tecnologias}
+
+A campanha experimental desta pesquisa utiliza tecnologias amplamente empregadas em arquiteturas de processamento distribuído e ingestão de dados. Entre elas, destacam-se o Apache Spark, o Spark Structured Streaming e o Apache Kafka.
+
+O Apache Spark é um \textit{framework} de processamento distribuído projetado para executar aplicações de dados em larga escala sobre \textit{clusters} computacionais. Sua arquitetura oferece suporte a diferentes tipos de carga, incluindo processamento em lote, consultas SQL, aprendizado de máquina, processamento de grafos e processamento de fluxos de dados. O Spark tornou-se uma das plataformas mais utilizadas para processamento distribuído devido à sua flexibilidade, ao uso de abstrações de alto nível e à integração com diferentes formatos e fontes de dados \cite{zaharia2016apache,shanahan2015large}.
+
+No contexto do processamento em lote, o Spark permite executar operações distribuídas sobre grandes conjuntos de dados, explorando paralelismo e distribuição de tarefas entre múltiplos nós do \textit{cluster}. Estudos mostram que o volume de dados, o número de recursos disponíveis e a configuração do ambiente podem afetar significativamente o desempenho de aplicações baseadas em Spark \cite{awan2015data,ahmed2020comprehensive}.
+
+Além do volume de dados, a alocação de recursos computacionais é um fator relevante para o desempenho de aplicações Spark. A quantidade de memória atribuída aos executores, o número de núcleos, o número de nós, o paralelismo e a configuração do ambiente podem influenciar o tempo de execução, utilização média dos nós, gargalos de memória, operações de I/O e coleta de lixo (\textit{garbage collection}). Estudos experimentais indicam que diferentes combinações de tamanho dos dados, número de nós e recursos dos executores podem exigir configurações distintas para alcançar melhores resultados \cite{alcantara2019performance,shyamasundar2019fine}.
+
+O Spark Structured Streaming estende o modelo do Spark para aplicações de processamento contínuo. Sua principal característica é oferecer uma API declarativa para fluxos de dados, permitindo que consultas sobre dados em tempo real sejam expressas de maneira semelhante a consultas sobre dados estáticos. Internamente, o Structured Streaming utiliza um modelo baseado em micro-lotes, no qual os dados recebidos são agrupados em pequenos intervalos de tempo e processados de forma incremental \cite{armbrust2018structured}.
+
+Esse modelo simplifica o desenvolvimento de aplicações de \textit{streaming}, mas também introduz custos associados à coordenação dos micro-lotes, ao gerenciamento de estado, ao controle do intervalo de \textit{trigger} e à sincronização entre componentes. Por isso, a configuração adequada do ambiente e dos parâmetros de execução é essencial para alcançar o equilíbrio entre \textit{throughput}, latência e estabilidade do processamento. Estudos exploratórios sobre Spark Structured Streaming mostram que fatores como variação de volume, velocidade dos dados, número de consultas paralelas e intervalo de processamento podem alterar o comportamento do sistema \cite{ivanov2018exploratory}.
+
+O Apache Kafka, por sua vez, é um sistema distribuído de mensageria baseado em \textit{log}, projetado para ingestão, armazenamento temporário e distribuição de fluxos de eventos em larga escala. O Kafka organiza mensagens em tópicos particionados, permitindo que produtores publiquem eventos e consumidores os leiam de forma escalável e desacoplada. Essa arquitetura favorece a construção de \textit{pipelines} de dados distribuídos, nos quais diferentes componentes podem produzir e consumir eventos de maneira independente \cite{kreps2011kafka}.
+
+Em sistemas intensivos em dados, o Kafka é frequentemente utilizado como camada de ingestão e transporte de eventos. Sua capacidade de lidar com altas taxas de mensagens, particionamento e replicação o torna adequado para arquiteturas orientadas a eventos e \textit{pipelines} de processamento em fluxo. No entanto, seu uso também envolve decisões relacionadas ao número de partições, replicação, taxa de produção, consumo, persistência, tolerância a falhas e integração com \textit{frameworks} de processamento.
+
+A confiabilidade em \textit{pipelines} baseados em Kafka pode ser influenciada por mecanismos de \textit{checkpoint}, replicação e recuperação após falhas. Estudos sobre arquiteturas de \textit{pipelines} Kafka indicam que mecanismos de \textit{checkpoint} podem reduzir o tempo de recuperação e perdas de mensagens em cenários de falha, reforçando a importância de decisões arquiteturais relacionadas à tolerância a falhas em sistemas de processamento contínuo \cite{aung2019coordinate}.
+
+\section{Métricas de Desempenho}
+\label{sec:metricas-desempenho}
+
+A avaliação de sistemas intensivos em dados depende da definição de métricas capazes de representar o comportamento do sistema sob diferentes condições operacionais. Entre as métricas mais utilizadas estão \textit{throughput}, latência, tempo total de execução, uso de CPU, consumo de memória, utilização de disco, tráfego de rede, taxa de processamento e indicadores de estabilidade.
+
+O \textit{throughput} representa a quantidade de dados processada por unidade de tempo. Em experimentos com processamento de dados, essa métrica pode ser expressa, por exemplo, em linhas por segundo, eventos por segundo ou \textit{bytes} por segundo. A latência, por sua vez, representa o tempo necessário para que um dado evento seja processado ou para que uma operação produza resultado. Em sistemas de \textit{streaming}, a latência pode ser analisada considerando o tempo entre a chegada do evento e seu processamento efetivo.
+
+O uso de CPU e memória permite avaliar a eficiência do sistema em relação aos recursos computacionais disponíveis. Em ambientes distribuídos, tais métricas são importantes para compreender se o aumento do paralelismo resulta em ganhos efetivos ou se introduz \textit{overhead} de coordenação. Além disso, em \textit{pipelines} de \textit{streaming}, o \textit{backpressure} representa um indicador relevante de sobrecarga, pois indica a incapacidade temporária do sistema de acompanhar a taxa de chegada dos dados.
+
+A literatura mostra que a avaliação de \textit{frameworks} distribuídos frequentemente considera métricas como tempo de execução, utilização de recursos, escalabilidade horizontal, escalabilidade vertical e custo. Em ambientes de nuvem e processamento distribuído, essas métricas ajudam a compreender não apenas o desempenho bruto do sistema, mas também sua eficiência operacional diante de diferentes configurações de infraestrutura \cite{ullah2022evaluation}.
+
+No contexto específico de Spark e Spark Streaming, métricas como tempo de execução, \textit{throughput}, \textit{speedup}, uso de memória, utilização de CPU, latência e \textit{backpressure} são recorrentes em estudos experimentais. Pesquisas sobre desempenho em Spark indicam que o aumento do volume de dados pode intensificar custos de I/O, uso de memória e \textit{garbage collection}, enquanto estudos sobre \textit{streaming} mostram que variações na taxa de chegada dos eventos e na capacidade de processamento podem afetar diretamente a estabilidade do \textit{pipeline} \cite{awan2015data,ahmed2020comprehensive,matteussi2022performance}.
+
+A Tabela~\ref{tab:metricas-desempenho} apresenta uma síntese das principais métricas consideradas nesta pesquisa.
+
+
+\begin{table}[htbp]
+\centering
+\caption{Principais métricas de desempenho consideradas na pesquisa}
+\label{tab:metricas-desempenho}
+\renewcommand{\arraystretch}{1.2} 
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Categoria} & \textbf{Métrica} & \textbf{Foco da Avaliação} \\ 
+\midrule
+Desempenho & \textit{Throughput} & Taxa de processamento por unidade de tempo (ex: eventos/s). \\ 
+           & Latência & Tempo de resposta ou atraso no processamento de um evento. \\ 
+           & Tempo total & Duração total do ciclo de execução (exclusivo para lote). \\ 
+\midrule
+Recursos   & Uso de CPU & Eficiência de processamento e paralelismo do \textit{cluster}. \\ 
+           & Memória & Consumo de RAM e impacto de \textit{garbage collection}. \\ 
+\midrule
+Sustentabilidade & \textit{Backpressure} & Saturação do \textit{pipeline} perante a taxa de ingestão. \\ 
+                 & Escalabilidade & Comportamento do sistema ao expandir dados ou nós. \\ 
+\bottomrule
+\multicolumn{3}{l}{\footnotesize Fonte: elaborado pelo autor.} \\
+\end{tabularx}
+\end{table}
+
+A escolha adequada das métricas é essencial para comparar alternativas arquiteturais. Em sistemas intensivos em dados, uma abordagem pode apresentar maior \textit{throughput}, mas também maior latência; outra pode reduzir o tempo de resposta, mas aumentar o consumo de recursos. Portanto, a avaliação deve considerar múltiplas métricas e interpretar os resultados de forma contextualizada, levando em conta os requisitos e restrições do sistema analisado.
+
+\section{Teoria da Informação e Apoio à Decisão Arquitetural}
+\label{sec:teoria-informacao}
+
+A Teoria da Informação, proposta por Shannon, fornece uma base matemática para medir informação, incerteza, redundância e capacidade de comunicação. Em sua formulação clássica, Shannon define a informação em termos probabilísticos, utilizando uma medida logarítmica associada ao conjunto de mensagens possíveis produzidas por uma fonte \cite{shannon1948mathematical}.
+
+Um dos conceitos centrais dessa teoria é a entropia. Para uma variável aleatória discreta $X$, com possíveis valores $x_i$ e probabilidades $p(x_i)$, a entropia pode ser expressa como:
+
+\begin{equation}
+H(X) = - \sum_{i=1}^{n} p(x_i) \log_2 p(x_i)
+\label{eq:entropia-fundamentacao}
+\end{equation}
+
+A entropia mede o grau de incerteza associado a uma distribuição de probabilidades. Quando os eventos são igualmente prováveis, a entropia tende a ser maior, indicando maior incerteza. Quando a distribuição é concentrada em poucos eventos, a entropia tende a ser menor, indicando maior previsibilidade. A partir desse conceito, também é possível discutir noções como redundância e conteúdo informacional.
+
+Nesta pesquisa, a Teoria da Informação é considerada como fundamento para investigar se características informacionais dos dados podem apoiar decisões arquiteturais em sistemas intensivos em dados. A hipótese é que propriedades como entropia, redundância, cardinalidade e variabilidade dos dados podem fornecer indícios sobre o comportamento esperado de diferentes estratégias de processamento, movimentação e armazenamento.
+
+Assim, a Teoria da Informação não é utilizada para substituir a avaliação experimental, mas para complementar as evidências empíricas obtidas. Seu papel é fornecer uma base quantitativa que permita explorar relações entre características dos dados e atributos observáveis de desempenho, contribuindo para a construção de um modelo de apoio à decisão arquitetural. Dessa forma, os conceitos apresentados neste capítulo sustentam as etapas seguintes da pesquisa, especialmente a Revisão Sistemática da Literatura, a campanha experimental e a proposta de modelagem quantitativa.

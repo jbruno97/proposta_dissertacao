@@ -1,0 +1,111 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Modelo de Dissertacao de Mestrado PROCC/UFS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[english,
+               brazilian,
+               msc]
+               {dcomp-abntex2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Area para adicao de pacotes extras
+% --- Pacotes mínimos necessários ---
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{footmisc}
+\setlength{\footnotemargin}{1em}
+\usepackage[table]{xcolor}
+
+%\includegraphics.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Utilize aqui seu pacote preferido para algoritmos.
+\usepackage[linesnumbered]{algorithm2e}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Compila o indice.
+\makeindex
+
+\begin{document}
+
+\hypersetup{hidelinks}
+% Seleciona o idioma do documento (conforme pacotes do babel).
+\selectlanguage{brazilian}
+
+% Retira espaco extra obsoleto entre as frases.
+\frenchspacing
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ELEMENTOS PRE-TEXTUAIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pretextual
+
+\titulo{Tomada de Decisão Arquitetural em Sistemas Intensivos em Dados: uma abordagem baseada em evidências}
+\autor{José Bruno Barros dos Santos}
+\orientador{Fábio Gomes Rocha}
+% \coorientador{Nome do Coorientador}
+\curso{Ciência da Computação}
+
+\inserirInformacoesPDF
+
+\imprimircapa
+\imprimirfolhaderosto*
+
+%\include{Pre_Textual/Dedicatoria}
+%\include{Pre_Textual/Agradecimentos}
+\include{Pre_Textual/Epigrafe}
+\include{Pre_Textual/Resumo}
+\include{Pre_Textual/Abstract}
+
+\mostrarlistadeILUSTRACOES
+%\mostrarlistadeQUADROS
+\mostrarlistadeTABELAS
+%\mostrarlistadeCODIGOS
+%\mostrarlistadeALGORITMOS
+
+\include{Pre_Textual/Abreviaturas}
+\include{Pre_Textual/Simbolos}
+
+\mostrarSUMARIO
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ELEMENTOS TEXTUAIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\textual
+\include{Conteudo/01_Introducao}
+\include{Conteudo/02_Fundamentacao}
+\include{Conteudo/03_Metodologia}
+\include{Conteudo/04_Revisao}
+\include{Conteudo/05_Experimento}
+\include{Conteudo/06_Resultados}
+\include{Conteudo/07_Cronograma}
+\include{Conteudo/08_Proximos}
+
+
+
+\phantompart
+\bibliography{Bibliografia}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ELEMENTOS POS-TEXTUAIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\postextual
+
+\renewcommand{\chapnumfont}{\chaptitlefont}
+\renewcommand{\afterchapternum}{}
+%\include{Pos_Textual/Apendices}
+%\include{Pos_Textual/Anexos}
+
+\end{document}

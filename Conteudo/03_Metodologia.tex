@@ -1,0 +1,104 @@
+\chapter{Metodologia}
+\label{cap:metodologia}
+
+O percurso metodológico adotado na pesquisa articula três dimensões complementares: uma Revisão Sistemática da Literatura (RSL), uma campanha experimental controlada e a proposta de um modelo quantitativo de apoio à decisão arquitetural. Essa organização permite combinar evidências secundárias, obtidas a partir da literatura científica, com evidências primárias, obtidas por meio de experimentação, buscando fundamentar a tomada de decisão arquitetural em sistemas intensivos em dados.
+
+A estratégia metodológica adotada aproxima-se da perspectiva da Engenharia de Software Baseada em Evidências, na qual decisões, práticas e recomendações devem ser apoiadas por evidências sistematicamente coletadas, avaliadas e interpretadas \cite{kitchenham2015evidence}. Nesse sentido, a Revisão Sistemática da Literatura contribui para organizar o conhecimento existente, enquanto a campanha experimental permite produzir evidências empíricas próprias sobre decisões arquiteturais específicas. A integração dessas etapas fornece a base para a proposta de um modelo quantitativo de apoio à decisão.
+
+\section{Caracterização da Pesquisa}
+\label{sec:caracterizacao-pesquisa}
+
+Esta pesquisa pode ser caracterizada como aplicada, uma vez que busca produzir conhecimento voltado ao apoio da tomada de decisão arquitetural em sistemas intensivos em dados. O objetivo não é apenas compreender um fenômeno técnico, mas também propor uma forma de apoiar escolhas arquiteturais relacionadas ao processamento, movimentação e análise de grandes volumes de dados.
+
+Quanto aos objetivos, a pesquisa possui caráter exploratório e explicativo. É exploratória porque investiga relações entre características dos dados, estratégias de processamento e métricas de desempenho ainda pouco sistematizadas na literatura. Também é explicativa porque busca compreender como determinadas decisões arquiteturais influenciam o comportamento observado em ambientes de processamento intensivo de dados, especialmente em cenários que envolvem processamento em lote e processamento em fluxo.
+
+Quanto à abordagem, a pesquisa combina métodos qualitativos e quantitativos. A dimensão qualitativa está presente na Revisão Sistemática da Literatura, por meio da identificação, categorização e interpretação das técnicas arquiteturais, métricas e lacunas presentes nos estudos primários. A dimensão quantitativa aparece tanto na síntese exploratória dos efeitos reportados na literatura quanto na análise estatística dos resultados experimentais.
+
+Do ponto de vista dos procedimentos técnicos, a pesquisa envolve revisão sistemática, análise documental, experimentação controlada e modelagem quantitativa. A revisão sistemática foi utilizada para consolidar evidências existentes; a experimentação foi conduzida para avaliar empiricamente decisões arquiteturais específicas; e a modelagem quantitativa será utilizada para propor uma abordagem de apoio à decisão baseada em características observáveis dos dados e do processamento.
+
+\section{Desenho Metodológico}
+\label{sec:desenho-metodologico}
+
+A pesquisa foi estruturada em três etapas principais. A primeira etapa corresponde à Revisão Sistemática da Literatura, cujo objetivo foi identificar técnicas, abordagens, métricas e lacunas relacionadas ao \textit{design} de sistemas intensivos em dados. Essa etapa fornece a base conceitual e empírica para compreender o estado da arte e delimitar o problema investigado. A condução da revisão seguiu diretrizes consolidadas para revisões sistemáticas em Engenharia de Software \cite{kitchenham2007guidelines,kitchtchenham2009,kitchenham2015evidence} e utilizou o protocolo PRISMA 2020 para relatar o processo de identificação, triagem, elegibilidade e inclusão dos estudos \cite{page2021prisma}.
+
+A segunda etapa corresponde à campanha experimental. Essa etapa foi planejada a partir das lacunas identificadas na literatura e teve como objetivo avaliar empiricamente o comportamento de estratégias de processamento \textit{batch} e \textit{streaming} em diferentes condições operacionais. O desenho experimental foi orientado por princípios de experimentação em Engenharia de Software, considerando definição de objetivos, planejamento dos fatores experimentais, identificação das variáveis, execução controlada, coleta sistemática de métricas e análise estatística dos resultados \cite{wohlin2012experimentation}. O experimento utilizou tecnologias amplamente adotadas em \textit{pipelines} de dados, incluindo Apache Spark, Spark Structured Streaming e Apache Kafka \cite{zaharia2016apache,armbrust2018structured,kreps2011kafka}.
+
+A terceira etapa consiste na proposta de um modelo quantitativo de apoio à decisão arquitetural. Essa etapa busca investigar como evidências da literatura, resultados experimentais e características informacionais dos dados podem ser integrados em uma abordagem capaz de apoiar a comparação entre alternativas arquiteturais. Para isso, serão considerados conceitos da Teoria da Informação, especialmente entropia e redundância, como possíveis indicadores para caracterizar dados e relacioná-los a métricas observáveis de desempenho \cite{shannon1948mathematical}.
+
+A Figura~\ref{fig:desenho-metodologico} apresenta uma visão geral do desenho metodológico da pesquisa.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+node distance=1.2cm, 
+etapa/.style={
+rectangle,
+rounded corners,
+draw,
+align=center,
+text width=4.4cm,
+minimum height=1.2cm,
+font=\small
+},
+produto/.style={
+rectangle,
+draw,
+align=center,
+text width=5cm,
+minimum height=1.2cm,
+font=\small
+},
+seta/.style={-{Latex[length=3mm]}, thick}
+]
+
+\node[etapa] (rsl) {Etapa 1 \\ Revisão Sistemática da Literatura};
+\node[produto, right=1.2cm of rsl] (rslout) {Técnicas, métricas, evidências e lacunas};
+
+\node[etapa, below=of rsl] (exp) {Etapa 2 \\ Campanha Experimental};
+\node[produto, right=1.2cm of exp] (expout) {Resultados empíricos sobre \textit{batch} e \textit{streaming}};
+
+\node[etapa, below=of exp] (modelo) {Etapa 3 \\ Modelagem Quantitativa};
+\node[produto, right=1.2cm of modelo] (modeloout) {Apoio à decisão arquitetural};
+
+
+\draw[seta] (rsl) -- (rslout);
+\draw[seta] (exp) -- (expout);
+\draw[seta] (modelo) -- (modeloout);
+
+\draw[seta] (rslout.south) -- ++(0,-0.3cm) -| (exp.north);
+\draw[seta] (expout.south) -- ++(0,-0.3cm) -| (modelo.north);
+
+\end{tikzpicture}
+\caption{Desenho metodológico da pesquisa}
+\label{fig:desenho-metodologico}
+\end{figure}
+
+A Revisão Sistemática da Literatura será detalhada no Capítulo~\ref{cap:rsl}, enquanto a campanha experimental será apresentada no Capítulo~\ref{cap:campanha-experimental}. Neste capítulo, o objetivo é apresentar a lógica metodológica geral que conecta essas etapas e justifica sua integração.
+
+\section{Procedimentos de Análise}
+\label{sec:procedimentos-analise}
+
+A análise da Revisão Sistemática da Literatura foi conduzida em duas dimensões. A primeira dimensão foi qualitativa, envolvendo a leitura, classificação e categorização dos estudos primários. Essa análise permitiu identificar técnicas de \textit{design}, tipos de otimização, métricas utilizadas, estilos arquiteturais recorrentes e lacunas metodológicas. A segunda dimensão foi quantitativa e exploratória, utilizando o \textit{Log Response Ratio} (LRR) como medida normalizada de efeito. Essa escolha permitiu comparar estudos que utilizaram diferentes métricas de desempenho, como tempo de execução, latência, \textit{throughput} e \textit{speedup}.
+
+A análise da campanha experimental foi conduzida a partir das métricas coletadas durante as execuções. Entre as métricas consideradas estão tempo total de execução, \textit{throughput}, latência, uso de CPU, consumo de memória, \textit{backpressure}, taxa de processamento e métricas de entrada e saída dos contêineres. Essas métricas permitiram avaliar o comportamento dos paradigmas \textit{batch} e \textit{streaming} sob diferentes volumes de dados, taxas de eventos, números de \textit{workers} e intervalos de \textit{trigger}.
+
+Para verificar se as diferenças observadas entre cenários eram estatisticamente significativas, foram utilizados procedimentos estatísticos não paramétricos. Inicialmente, foi aplicado o teste de Shapiro-Wilk para avaliar a normalidade das distribuições das métricas coletadas \cite{shapiro1965analysis}. Considerando que distribuições de desempenho em sistemas computacionais nem sempre podem ser assumidas como normalmente distribuídas, foram utilizados testes não paramétricos nas comparações entre cenários.
+
+Para comparações entre dois grupos independentes, foi aplicado o teste de Mann-Whitney U \cite{mann1947test}. Para comparações entre múltiplos grupos, foi utilizado o teste de Kruskal-Wallis \cite{kruskal1952use}. Quando identificadas diferenças significativas entre múltiplos cenários, foram aplicados testes \textit{pós-hoc} de Dunn com correção de Bonferroni \cite{dunn1964multiple}. Além dos testes de significância, foi utilizado o tamanho de efeito de Cliff's Delta para avaliar a magnitude das diferenças entre distribuições \cite{cliff1993dominance}.
+
+A etapa de modelagem quantitativa será conduzida a partir da integração entre os achados da literatura, os resultados experimentais e características informacionais dos dados. A proposta não busca substituir a experimentação, mas oferecer uma forma de apoio preliminar à análise de alternativas arquiteturais. A intenção é investigar se características como volume, taxa de eventos, entropia, redundância e variabilidade podem ser relacionadas a métricas de desempenho, contribuindo para uma tomada de decisão arquitetural mais fundamentada.
+
+\section{Validade da Pesquisa}
+\label{sec:validade-pesquisa}
+
+A validade da pesquisa será analisada considerando possíveis ameaças à validade interna, externa, de construção e de conclusão. Essa organização é comum em estudos experimentais em Engenharia de Software e contribui para tornar explícitas as limitações do desenho experimental, da coleta de dados e da interpretação dos resultados \cite{wohlin2012experimentation}.
+
+A validade interna está relacionada à capacidade de atribuir os efeitos observados às variáveis controladas no experimento. Para mitigar ameaças internas, os cenários foram definidos previamente, as execuções foram automatizadas e as métricas foram coletadas de forma sistemática. Além disso, cada cenário foi executado repetidas vezes, reduzindo a influência de variações ocasionais do ambiente.
+
+A validade externa refere-se à possibilidade de generalização dos resultados para outros contextos. Como o experimento utiliza um ambiente específico, baseado em Spark, Kafka e um \textit{dataset} definido, os resultados devem ser interpretados dentro desse contexto. A ampliação para outros \textit{datasets}, tecnologias e ambientes de execução será indicada como possibilidade de trabalhos futuros.
+
+A validade de construção está relacionada à adequação das métricas utilizadas para representar os conceitos investigados. Para mitigar essa ameaça, foram utilizadas métricas amplamente adotadas em avaliações de desempenho, como \textit{throughput}, latência, uso de recursos, \textit{backpressure} e escalabilidade.
+
+A validade de conclusão diz respeito à adequação dos procedimentos estatísticos utilizados para interpretar os resultados. Para reduzir essa ameaça, foram aplicados testes de normalidade, testes não paramétricos, pós-testes e medidas de tamanho de efeito, evitando conclusões baseadas apenas em médias ou observações visuais.
+
+Dessa forma, a metodologia proposta permite que a pesquisa avance de uma compreensão ampla da literatura para uma avaliação empírica específica e, posteriormente, para uma proposta de modelagem quantitativa voltada ao apoio à decisão arquitetural em sistemas intensivos em dados.

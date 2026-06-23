@@ -1,0 +1,268 @@
+\chapter{Campanha Experimental}
+\label{cap:campanha-experimental}
+ 
+A campanha experimental constituiu a segunda etapa da pesquisa e teve como objetivo avaliar empiricamente o comportamento de estratégias de processamento \textit{batch} e \textit{streaming} em um cenário de sistema intensivo em dados. Para isso, foi construído um ambiente experimental baseado em Apache Spark, Spark Structured Streaming, Apache Kafka e contêineres Docker, utilizando o \textit{dataset} NYC Taxi como fonte de dados.
+ 
+A condução da campanha experimental foi motivada pelas lacunas identificadas na Revisão Sistemática da Literatura, especialmente a necessidade de evidências empíricas mais controladas, comparáveis e estatisticamente analisáveis. A partir dessa etapa, buscou-se observar como diferentes decisões arquiteturais e configurações operacionais afetam métricas como \textit{throughput}, latência, escalabilidade, consumo de recursos e estabilidade do processamento.
+ 
+Nesta pesquisa, a campanha experimental é tratada como um experimento controlado principal, composto por múltiplos cenários experimentais. Essa organização permite avaliar diferentes fatores --- como volume de dados, taxa de eventos, número de \textit{workers} e intervalo de \textit{trigger} --- sem fragmentar a pesquisa em um conjunto de experimentos independentes. O desenho experimental foi orientado por princípios de experimentação em Engenharia de Software, considerando planejamento, definição de variáveis, controle de fatores, repetição das execuções e análise estatística dos resultados \cite{wohlin2012experimentation}.
+ 
+\section{Objetivo e Questões Experimentais}
+\label{sec:objetivo-questoes-experimento}
+ 
+O objetivo da campanha experimental foi comparar, de forma empírica e reproduzível, o comportamento dos paradigmas de processamento \textit{batch} e \textit{streaming} sob diferentes condições de carga, paralelismo e configuração temporal. O foco recaiu sobre a análise de como decisões arquiteturais relacionadas ao paradigma de processamento, ao volume dos dados, à taxa de eventos, ao número de \textit{workers} e à cadência dos micro-lotes impactam o desempenho de um \textit{pipeline} intensivo em dados.
+ 
+De modo geral, a campanha buscou responder à seguinte questão norteadora: \textit{como diferentes estratégias de processamento de dados se comportam em termos de throughput, latência, escalabilidade e consumo de recursos em um ambiente distribuído baseado em Spark e Kafka?}
+ 
+A partir dessa questão geral, foram definidas quatro questões experimentais específicas:
+ 
+\begin{enumerate}
+    \item \textbf{RQ1:} Qual paradigma apresenta maior \textit{throughput} em sistemas intensivos em dados: processamento \textit{batch} ou processamento \textit{streaming}?
+    \item \textbf{RQ2:} Como o volume de dados afeta o desempenho dos paradigmas \textit{batch} e \textit{streaming}?
+    \item \textbf{RQ3:} Como a taxa de eventos e a cadência de micro-lotes afetam a latência e a estabilidade do processamento \textit{streaming}?
+    \item \textbf{RQ4:} Como a escalabilidade horizontal afeta o desempenho dos paradigmas \textit{batch} e \textit{streaming}?
+\end{enumerate}
+ 
+A RQ1 compara diretamente os paradigmas de processamento. A RQ2 investiga o impacto do volume de dados sobre o desempenho de cada paradigma. A RQ3 analisa aspectos específicos do processamento em fluxo contínuo, especialmente a relação entre taxa de eventos e intervalo de \textit{trigger}. Por fim, a RQ4 investiga o efeito da escalabilidade horizontal --- medida pelo número de \textit{workers} Spark --- sobre o desempenho de ambos os paradigmas.
+ 
+\section{Ambiente Experimental}
+\label{sec:ambiente-experimental}
+ 
+O ambiente experimental foi implementado utilizando contêineres Docker, com o objetivo de isolar e controlar os componentes do \textit{pipeline}. A arquitetura experimental incluiu um \textit{cluster} Spark, um serviço Kafka, \textit{scripts} de geração e envio de eventos, \textit{jobs} de processamento \textit{batch} e \textit{streaming}, além de \textit{scripts} de monitoramento e consolidação dos resultados. Todos os experimentos foram executados em uma máquina com processador AMD Ryzen 7 7435HS (8 núcleos físicos e 16 \textit{threads}), 61,53~GB de memória RAM, 467,35~GB de armazenamento interno e sistema operacional Linux (kernel 7.0.0-15-generic).
+ 
+O Apache Spark foi utilizado como mecanismo de processamento distribuído. Nos cenários \textit{batch}, o Spark processou amostras de dados previamente armazenadas em disco. Nos cenários \textit{streaming}, o Spark Structured Streaming consumiu eventos publicados em tópicos Kafka e os processou continuamente por meio de micro-lotes \cite{armbrust2018structured,zaharia2016apache}.
+ 
+O Apache Kafka atuou como sistema de mensageria distribuído e camada de ingestão dos eventos. Sua adoção permitiu simular um fluxo contínuo de dados, com produtores enviando registros em taxas controladas e consumidores processando os eventos por meio do Spark Structured Streaming \cite{kreps2011kafka}.
+ 
+A Figura \ref{fig:arquitetura-experimento-vertical} apresenta uma visão geral da arquitetura experimental adotada.
+ 
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 0.4cm,
+    bloco/.style={
+        rectangle,
+        rounded corners=4pt,
+        draw=black,
+        fill=white,
+        align=center,
+        text width=3.0cm,
+        minimum height=1.0cm,
+        font=\scriptsize
+    },
+    metrica/.style={
+        rectangle,
+        draw=black,
+        fill=white,
+        align=center,
+        text width=3.0cm,
+        minimum height=1.0cm,
+        font=\scriptsize
+    },
+    monitor/.style={
+        rectangle,
+        draw=black,
+        fill=white,
+        align=center,
+        text width=7.0cm,
+        minimum height=1.0cm,
+        font=\scriptsize
+    },
+    seta/.style={-{Stealth[scale=1.1]}, thick},
+    coleta/.style={-{Stealth[scale=1.1]}, thick, dashed}
+]
+ 
+% CAMADA 1: INGESTÃO 
+\node[bloco] (dados) at (0, 3.8) {Dataset NYC Taxi\\(Arquivos Parquet)};
+\node[bloco] (produtor) at (5.0, 3.8) {Produtor de eventos\\(taxas controladas)};
+ 
+% CAMADA 2: PROCESSAMENTO 
+\node[bloco] (sparkbatch) at (0, 2.0) {Apache Spark\\(Processamento \textit{batch})};
+\node[bloco] (kafka) at (5.0, 2.0) {Apache Kafka\\(tópicos de eventos)};
+\node[bloco] (sparkstream) at (9.0, 2.0) {Spark Structured Streaming\\(micro-lotes)};
+ 
+% CAMADA 3: RESULTADOS 
+\node[metrica] (metricabatch) at (0, 0.2) {Métricas \textit{batch}\\(tempo, \textit{throughput}, CPU, mem)};
+\node[metrica] (metricastream) at (9.0, 0.2) {Métricas \textit{streaming}\\(latência, \textit{backpressure})};
+
+% CAMADA 4: MONITORAMENTO GLOBAL 
+\node[monitor] (monitoramento) at (4.5, -1.5) {Monitoramento Docker\\(CPU, memória, rede, disco\\e estatísticas de execução)};
+ 
+% --- CONEXÕES DO FLUXO BATCH (ESQUERDA) ---
+\draw[seta] (dados) -- (sparkbatch);
+\draw[seta] (sparkbatch) -- (metricabatch);
+ 
+% --- CONEXÕES DO FLUXO STREAMING (DIREITA) ---
+\draw[seta] (produtor) -- (kafka);
+\draw[seta] (kafka) -- (sparkstream);
+\draw[seta] (sparkstream) -- (metricastream);
+ 
+
+\draw[coleta] (sparkbatch.south) -- ++(0,-0.3cm) -| ([xshift=-2.2cm]monitoramento.north);
+\draw[coleta] (kafka.south) -- (kafka.south |- monitoramento.north);
+\draw[coleta] (sparkstream.south) -- ++(0,-0.3cm) -| ([xshift=2.2cm]monitoramento.north);
+ 
+\end{tikzpicture}
+\caption{Arquitetura geral da campanha experimental organizada em camadas funcionais.}
+\label{fig:arquitetura-experimento-vertical}
+\end{figure}
+
+A Figura \ref{fig:arquitetura-experimento-vertical} detalha a arquitetura em camadas adotada na campanha experimental, dividida em três pilares principais: ingestão, processamento e telemetria. Na camada superior, os dados históricos do Dataset NYC Taxi alimentam o ecossistema batch via Apache Spark, enquanto o Produtor de Eventos simula a chegada contínua de dados em tempo real com taxas controladas para o Apache Kafka. No núcleo do processamento, o Apache Spark manipula os dados em lote e o Spark Structured Streaming consome os tópicos do Kafka em micro-lotes, gerando as respectivas métricas de desempenho e resiliência (throughput, latência e backpressure). Por fim, integrado na base da infraestrutura, o módulo de Monitoramento Docker atua de forma transversal por meio de conexões de telemetria (representadas pelas linhas tracejadas), coletando continuamente o consumo de recursos físicos cruciais como CPU, memória, rede e disco durante a execução de ambos os fluxos.
+
+
+\section{Dataset e Preparação dos Dados}
+\label{sec:dataset-experimento}
+ 
+O \textit{dataset} utilizado na campanha experimental foi o NYC Taxi, amplamente empregado em estudos envolvendo processamento de dados em larga escala, análise de mobilidade urbana e \textit{workloads} analíticos distribuídos. Os dados foram utilizados no formato Parquet e organizados em amostras de diferentes tamanhos, permitindo avaliar o impacto do volume sobre o desempenho dos cenários experimentais.
+ 
+Foram consideradas quatro escalas de dados: 200~MB, 1~GB, 3~GB e 10~GB. A utilização de volumes distintos teve como objetivo verificar se o aumento do tamanho do \textit{dataset} impacta de maneira semelhante os paradigmas \textit{batch} e \textit{streaming}, bem como avaliar se \textit{workloads} maiores favorecem a amortização de \textit{overheads} distribuídos.
+ 
+Nos cenários \textit{batch}, os arquivos Parquet foram lidos e processados diretamente pelo Spark a partir do sistema de arquivos local. Nos cenários \textit{streaming}, os dados foram convertidos em eventos discretos e enviados ao Kafka por meio de \textit{scripts} produtores, respeitando taxas de emissão previamente definidas. Essa estratégia permitiu simular um fluxo contínuo de dados e controlar a pressão exercida sobre o \textit{pipeline} de \textit{streaming}.
+ 
+
+\section{Variáveis e Métricas}
+\label{sec:variaveis-metricas}
+ 
+A campanha experimental foi estruturada a partir de variáveis independentes e dependentes. As variáveis independentes representam os fatores controlados durante a execução dos cenários; as variáveis dependentes correspondem às métricas coletadas para avaliar o comportamento do sistema.
+ 
+A Tabela~\ref{tab:variaveis-independentes} apresenta as variáveis independentes consideradas, com seus respectivos valores.
+ 
+\begin{table}[htbp]
+\centering
+\caption{Variáveis independentes da campanha experimental}
+\label{tab:variaveis-independentes}
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{4.8cm} p{7.8cm}}
+\toprule
+\textbf{Variável independente} & \textbf{Valores considerados} \\
+\midrule
+Paradigma de processamento    & Processamento \textit{batch} e processamento \textit{streaming} \\
+Volume de dados               & 200~MB, 1~GB, 3~GB e 10~GB \\
+Taxa de eventos               & 200, 500, 1.000 e 2.000 eventos por segundo \\
+Número de \textit{workers} Spark & 1, 2 e 4 \textit{workers} \\
+Intervalo de \textit{trigger} & 1~s, 2~s e 5~s \\
+\bottomrule
+\multicolumn{2}{l}{\footnotesize Fonte: elaborado pelo autor.}
+\end{tabular}
+\end{table}
+ 
+Essas variáveis representam decisões ou configurações arquiteturais relevantes em \textit{pipelines} de dados. A escolha do paradigma define a forma geral de processamento; o volume e a taxa de eventos representam características da carga de trabalho; o número de \textit{workers} define o nível de paralelismo disponível; e o intervalo de \textit{trigger} determina a cadência de formação dos micro-lotes no Spark Structured Streaming.
+ 
+A Tabela~\ref{tab:metricas-experimento} apresenta as principais métricas coletadas durante a campanha.
+ 
+\begin{table}[htbp]
+\centering
+\caption{Métricas avaliadas na campanha experimental}
+\label{tab:metricas-experimento}
+\small
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{4.8cm} p{7.8cm}}
+\toprule
+\textbf{Métrica} & \textbf{Descrição} \\
+\midrule
+Tempo total de execução  & Tempo decorrido entre o início e a conclusão do processamento em cada cenário. \\
+\textit{Throughput}      & Quantidade de registros ou eventos processados por unidade de tempo. \\
+Latência                 & Intervalo de tempo entre a chegada de um evento e a conclusão de seu processamento, especialmente relevante nos cenários \textit{streaming}. \\
+Uso de CPU               & Utilização média e máxima da CPU nos contêineres durante a execução. \\
+Consumo de memória       & Uso médio e máximo de memória nos contêineres. \\
+\textit{Backpressure}    & Indicador de pressão no \textit{pipeline} quando a taxa de chegada dos eventos supera a capacidade de processamento. \\
+Taxa de processamento    & Métrica do Spark Structured Streaming que expressa o número de registros processados por segundo em cada micro-lote. \\
+Rede e disco             & Tráfego de entrada e saída dos contêineres durante a execução dos cenários. \\
+\bottomrule
+\multicolumn{2}{l}{\footnotesize Fonte: elaborado pelo autor.}
+\end{tabular}
+\end{table}
+ 
+O \textit{throughput} foi utilizado como métrica primária para comparar a capacidade de processamento entre os cenários. Formalmente, essa grandeza é expressa pela Equação~\ref{eq:throughput}:
+ 
+\begin{equation}
+\text{\textit{Throughput}} = \frac{N_{\text{registros}}}{T_{\text{processamento}}}
+\label{eq:throughput}
+\end{equation}
+ 
+\noindent em que $N_{\text{registros}}$ representa a quantidade de registros processados e $T_{\text{processamento}}$ o tempo total de processamento.
+ 
+Nos cenários de \textit{streaming}, a latência foi interpretada como o intervalo de tempo entre a produção de um evento e a conclusão de seu processamento pelo Spark Structured Streaming. Essa relação é representada pela Equação~\ref{eq:latencia}:
+ 
+\begin{equation}
+\text{Latência} = T_{\text{processamento\_evento}} - T_{\text{chegada\_evento}}
+\label{eq:latencia}
+\end{equation}
+ 
+\noindent em que $T_{\text{processamento\_evento}}$ é o instante de conclusão do processamento e $T_{\text{chegada\_evento}}$ é o instante de chegada do evento ao \textit{pipeline}.
+ 
+Essas métricas foram selecionadas porque representam dimensões complementares do desempenho de sistemas intensivos em dados. Enquanto \textit{throughput} e latência expressam a capacidade de processamento e o tempo de resposta do sistema, as métricas de CPU, memória, rede e disco permitem quantificar o custo computacional associado a cada configuração experimental.
+ 
+\section{Cenários Experimentais}
+\label{sec:cenarios-experimentais}
+ 
+Os cenários experimentais foram organizados em blocos temáticos, permitindo isolar diferentes fatores e observar seus efeitos individuais sobre o desempenho do sistema. Ao todo, foram definidos 35 cenários, sendo 16 relacionados ao processamento \textit{batch} e 19 ao processamento \textit{streaming}.
+ 
+A Tabela~\ref{tab:cenarios-experimentais} apresenta a organização geral dos cenários, seus objetivos e configurações principais.
+ 
+\begin{table}[htbp]
+\centering
+\caption{Organização dos cenários experimentais}
+\label{tab:cenarios-experimentais}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.30}
+\begin{tabular}{l p{3.8cm} p{6.0cm} r}
+\toprule
+\textbf{Grupo} & \textbf{Objetivo} & \textbf{Configurações principais} & \textbf{Qtd.} \\
+\midrule
+BL1--BL4  & Avaliar o impacto do volume em \textit{batch}           & 200~MB, 1~GB, 3~GB e 10~GB; 1 \textit{worker}                              & 4  \\
+BS1--BS12 & Avaliar escalabilidade horizontal em \textit{batch}     & 1, 2 e 4 \textit{workers} para cada volume de dados                        & 12 \\
+SL1--SL4  & Avaliar o impacto da taxa em \textit{streaming}         & 200, 500, 1.000 e 2.000 eventos/s; \textit{trigger} de 1~s; 1 \textit{worker} & 4  \\
+SS1--SS12 & Avaliar escalabilidade horizontal em \textit{streaming} & 1, 2 e 4 \textit{workers} para cada taxa de eventos                        & 12 \\
+ST1--ST3  & Avaliar sensibilidade ao \textit{trigger}               & 1.000 eventos/s; 1 \textit{worker}; \textit{triggers} de 1~s, 2~s e 5~s   & 3  \\
+\midrule
+\textbf{Total} & --- & --- & \textbf{35} \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize Fonte: elaborado pelo autor.}
+\end{tabular}
+\end{table}
+ 
+Os cenários \textit{batch} foram organizados em dois blocos. O primeiro (BL1--BL4) avaliou o impacto do volume de dados com número fixo de \textit{workers}. O segundo (BS1--BS12) avaliou a escalabilidade horizontal, variando o número de \textit{workers} para cada volume de dados. Essa estrutura permitiu verificar se o aumento do paralelismo produz ganhos consistentes ou se introduz custos de coordenação que limitam a eficiência esperada.
+ 
+Os cenários \textit{streaming} foram divididos em três blocos. O primeiro (SL1--SL4) avaliou o impacto da taxa de eventos com \textit{trigger} fixo e um único \textit{worker}. O segundo (SS1--SS12) avaliou a escalabilidade horizontal variando o número de \textit{workers}. O terceiro (ST1--ST3) avaliou a sensibilidade do \textit{pipeline} de \textit{streaming} a diferentes intervalos de \textit{trigger}. Essa estrutura possibilitou analisar tanto a capacidade de absorção de eventos quanto a estabilidade temporal do processamento em fluxo contínuo.
+ 
+
+\section{Execução e Repetições}
+\label{sec:execucao-repeticoes}
+ 
+Cada cenário foi executado 30 vezes. Considerando os 35 cenários definidos, a campanha experimental totalizou 1.050 execuções, conforme indicado na Equação~\ref{eq:total-execucoes}:
+ 
+\begin{equation}
+N_{\text{execuções}} = 35 \times 30 = 1.050
+\label{eq:total-execucoes}
+\end{equation}
+ 
+A repetição dos cenários teve como objetivo reduzir a influência de variações aleatórias do ambiente e permitir uma análise estatística mais robusta das métricas coletadas. Antes da campanha completa, foi realizada uma etapa de validação operacional com uma execução por cenário. Essa validação verificou o funcionamento correto de todos os componentes do \textit{pipeline}, incluindo a infraestrutura Docker, o Kafka, o Spark, o produtor de eventos, a coleta de métricas, a geração de arquivos CSV e a consolidação dos resultados.
+ 
+Após a validação operacional, a campanha completa foi executada com coleta automatizada das métricas. Os dados brutos foram armazenados em arquivos CSV e posteriormente consolidados para análise estatística e geração de relatórios.
+ 
+
+\section{Automação e Coleta de Métricas}
+\label{sec:automacao-coleta}
+ 
+A execução experimental foi integralmente automatizada por meio de \textit{scripts} responsáveis por preparar o ambiente, gerar amostras de dados, executar os \textit{jobs} de processamento, monitorar os contêineres e consolidar os resultados. A automação teve como objetivos reduzir interferências manuais, aumentar a reprodutibilidade e padronizar a coleta das métricas\footnote{Os \textit{scripts} de automação, os arquivos de configuração do Docker e os dados brutos coletados estão disponíveis publicamente em: \url{https://github.com/jbruno97/stream-batch-experiment}.}.
+ 
+Os artefatos produzidos incluem resultados brutos das execuções \textit{batch} e \textit{streaming}, séries temporais de métricas dos contêineres, estatísticas de micro-lotes, sumários por cenário, gráficos e relatórios textuais. Esses artefatos permitiram analisar tanto o comportamento agregado dos cenários quanto variações específicas observadas durante a execução dos \textit{jobs}.
+ 
+A coleta de métricas dos contêineres permitiu monitorar CPU, memória, rede e disco ao longo de toda a execução. Nos cenários de \textit{streaming}, foram coletadas adicionalmente métricas específicas do Spark Structured Streaming, como taxa de processamento por micro-lote, latência de \textit{trigger}, latência de eventos e \textit{backpressure}.
+ 
+
+\section{Procedimento de Análise Estatística}
+\label{sec:analise-estatistica-experimento}
+ 
+A análise dos resultados foi conduzida em etapas sequenciais. Inicialmente, foram calculadas estatísticas descritivas por cenário, incluindo média, mediana, desvio padrão e coeficiente de variação. Em seguida, foi aplicado o teste de Shapiro-Wilk para avaliar a normalidade das distribuições \cite{shapiro1965analysis}.
+ 
+Como métricas de desempenho em sistemas computacionais não devem ser assumidas como normalmente distribuídas, foram adotados testes estatísticos não paramétricos. Para a comparação entre os paradigmas \textit{batch} e \textit{streaming}, foi aplicado o teste de Mann-Whitney U \cite{mann1947test}. Para comparações entre múltiplos grupos --- como diferentes volumes, taxas de eventos, intervalos de \textit{trigger} e quantidades de \textit{workers} --- foi utilizado o teste de Kruskal-Wallis \cite{kruskal1952use}. Quando necessário, foram aplicados testes pós-hoc de Dunn com correção de Bonferroni \cite{dunn1964multiple}.
+ 
+Além dos testes de significância, foi calculado o tamanho de efeito de Cliff's Delta para avaliar a magnitude das diferenças entre distribuições \cite{cliff1993dominance}. Essa análise permitiu interpretar não apenas a existência de diferenças estatisticamente significativas, mas também sua relevância prática no contexto experimental.
+ 
+A organização em cenários temáticos, a execução com 30 repetições por cenário, a coleta automatizada de métricas e o uso de testes não paramétricos fornecem uma base empírica rigorosa para discutir os \textit{trade-offs} envolvidos na escolha entre estratégias de processamento em sistemas intensivos em dados. Os resultados obtidos a partir dessa campanha são discutidos nos capítulos seguintes, com ênfase no impacto das decisões arquiteturais sobre \textit{throughput}, latência, escalabilidade e estabilidade do processamento.
