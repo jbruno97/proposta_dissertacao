@@ -1,11 +1,11 @@
-# Modelo de Mestrado PROCC/UFS
+# Proposta de Dissertacao
 
-Template LaTeX baseado em abnTeX2 para dissertacao de mestrado do Programa de
+Proposta de dissertacao em LaTeX baseada no modelo de mestrado do Programa de
 Pos-Graduacao em Ciencia da Computacao da Universidade Federal de Sergipe.
 
 ## Overleaf
 
-Use `Modelo-Mestrado-PROCC.tex` como arquivo principal.
+Use `Proposta.tex` como arquivo principal.
 
 Configuracao recomendada:
 
@@ -14,7 +14,8 @@ Configuracao recomendada:
 
 ## Estrutura
 
-- `Modelo-Mestrado-PROCC.tex`: arquivo principal, dados do trabalho e ordem dos elementos.
+- `Proposta.tex`: arquivo principal, dados do trabalho e ordem dos elementos.
+- `Proposta_Jose_Bruno.pdf`: versao final em PDF da proposta.
 - `dcomp-abntex2.cls`: classe customizada do modelo.
 - `Mestrado.sty`: capa, folha de rosto, ficha catalografica e folha de aprovacao.
 - `Pre_Textual/`: resumo, abstract, agradecimentos e listas.
@@ -26,8 +27,8 @@ Configuracao recomendada:
 ## Compilacao local
 
 ```sh
-pdflatex Modelo-Mestrado-PROCC.tex
-bibtex Modelo-Mestrado-PROCC
-pdflatex Modelo-Mestrado-PROCC.tex
-pdflatex Modelo-Mestrado-PROCC.tex
+pdflatex Proposta.tex
+bibtex Proposta
+pdflatex Proposta.tex
+pdflatex Proposta.tex
 ```
